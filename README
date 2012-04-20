@@ -1,0 +1,6 @@
+AtomicPy
+========
+
+Atomic primatives for python.
+
+Currently this consists of AtomicInt
