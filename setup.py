@@ -1,7 +1,8 @@
 from setuptools import setup, Extension
 
 atomic = Extension('atomic',
-                   sources=['atomic_py.c'])
+                   sources=['C/atomic.c'],
+                   )
 
 setup(name='AtomicPy',
       version='dev',

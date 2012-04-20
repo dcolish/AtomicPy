@@ -1,9 +1,9 @@
 #include <Python.h>
-#include "structmember.h"
+#include <structmember.h>
 
 
-#define atomic_int_add(ptr, val) __sync_add_and_fetch(ptr, val)
-#define atomic_int_sub(ptr, val) __sync_sub_and_fetch(ptr, val)
+#define atomic_add(ptr, val) __sync_add_and_fetch(ptr, val)
+#define atomic_sub(ptr, val) __sync_sub_and_fetch(ptr, val)
 
 
 typedef struct {
@@ -42,17 +42,11 @@ AtomicInt_init(AtomicInt *self, PyObject *args)
 }
 
 
-static PyMemberDef AtomicInt_members[] = {
-    {"number", T_INT, offsetof(AtomicInt, number), 0, "atomic number"},
-    {NULL}  /* Sentinel */
-};
-
-
 PyObject*
 AtomicInt_increment(AtomicInt *self)
 {
     Py_INCREF(self);
-    atomic_int_add(&self->number, 1);
+    atomic_add(&self->number, 1);
     Py_DECREF(self);
     return Py_BuildValue("");
 }
@@ -65,7 +59,7 @@ AtomicInt_increment_by(AtomicInt *self, PyObject *args)
     if (! PyArg_ParseTuple(args, "i", &value))
         return NULL;
     Py_INCREF(self);
-    atomic_int_add(&self->number, value);
+    atomic_add(&self->number, value);
     Py_DECREF(self);
     return Py_BuildValue("");
 }
@@ -78,7 +72,7 @@ AtomicInt_decrement_by(AtomicInt *self, PyObject *args)
     if (! PyArg_ParseTuple(args, "i", &value))
         return NULL;
     Py_INCREF(self);
-    atomic_int_sub(&self->number, value);
+    atomic_sub(&self->number, value);
     Py_DECREF(self);
     return Py_BuildValue("");
 }
@@ -95,6 +89,12 @@ AtomicInt_str(AtomicInt* obj)
 {
     return PyString_FromFormat("%d", obj->number);
 }
+
+
+static PyMemberDef AtomicInt_members[] = {
+   {"number", T_INT, offsetof(AtomicInt, number), 0, "atomic number"},
+   {NULL}  /* Sentinel */
+};
 
 
 static PyMethodDef AtomicInt_methods[] = {
@@ -119,13 +119,13 @@ static PyTypeObject AtomicIntType = {
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
     0,                         /*tp_compare*/
-    AtomicInt_repr,                         /*tp_repr*/
+    (reprfunc)AtomicInt_repr,                         /*tp_repr*/
     0,                         /*tp_as_number*/
     0,                         /*tp_as_sequence*/
     0,                         /*tp_as_mapping*/
     0,                         /*tp_hash */
     0,                         /*tp_call*/
-    AtomicInt_str,                         /*tp_str*/
+    (reprfunc)AtomicInt_str,                         /*tp_str*/
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
